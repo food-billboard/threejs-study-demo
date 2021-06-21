@@ -1,11 +1,17 @@
 import React, { memo, useCallback, useEffect } from "react"
 import * as THREE from 'three'
-import Orbitcontrols from 'three-orbit-controls'
+import * as Orbitcontrols from 'three-orbit-controls'
+import LoadingWrappr from '@/components/Loading'
+import Gui from '@/components/Gui'
+import { getContainer, sleep } from '@/utils'
 import './index.less'
+import { Fragment } from "react"
 
-export default memo(() => {
+const OrbitcontrolsConstructor = Orbitcontrols(THREE)
 
-  const initThree = useCallback(() => {
+export default LoadingWrappr(memo((props: any) => {
+
+  const initThree = useCallback(async () => {
     const container = document.querySelector('#three-base')
     if(container) {
       const animate = () => {
@@ -14,18 +20,17 @@ export default memo(() => {
         cube.rotation.y += 0.01
         renderer.render(scene, camera)
       }
-      const containerWidth = container.clientWidth
-      const containerHeight = container.clientHeight
+      const { width: containerWidth, height: containerHeight } = container.getBoundingClientRect()
       const scene = new THREE.Scene()
       const camera = new THREE.PerspectiveCamera(75, containerWidth / containerHeight, 0.1, 1000)
       camera.position.set(0, 0, 5)
       camera.lookAt(scene.position)
-      // let orbitControls = new Orbitcontrols(camera)
+      let orbitControls = new OrbitcontrolsConstructor(camera)
       const geometry = new THREE.BoxGeometry()
       const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } )
       const cube = new THREE.Mesh( geometry, material )
       scene.add( cube )
-      // orbitControls.autoRotate = false
+      orbitControls.autoRotate = false
       const renderer = new THREE.WebGLRenderer()
       renderer.setSize(containerWidth, containerHeight)
       container.appendChild( renderer.domElement )
@@ -34,11 +39,13 @@ export default memo(() => {
   }, [])
 
   useEffect(() => {
-    initThree()
+    props.loadend ? props.loadend(initThree) : initThree()
   }, [])
   
   return (
-    <div id="three-base"></div>
+    <Fragment>
+      <div id="three-base"></div>
+    </Fragment>
   )
   
-})
+}))

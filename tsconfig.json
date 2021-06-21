@@ -25,7 +25,8 @@
   },
   "include": [
     "pages",
-    "react-app-env.d.ts"
+    "react-app-env.d.ts",
+    "components"
   ],
   "exclude": [
     "node_modules"

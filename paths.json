@@ -18,11 +18,11 @@
       "@/components/*": [
         "./components/*"
       ],
-      "@/utils/*": [
-        "./utils/*"
+      "@/utils": [
+        "./utils"
       ],
-      "@/constants/*": [
-        "./utils/constants/*"
+      "@/constants": [
+        "./utils/constants"
       ],
       "@/store": [
         "./store"

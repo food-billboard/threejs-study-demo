@@ -6,6 +6,7 @@ import {
   MenuFoldOutlined,
 } from '@ant-design/icons'
 import router, { TRouter } from '@/config/router'
+import { WRAPPER_MAIN_ID } from '@/constants'
 import './index.less'
 
 const { Header, Sider, Content } = AntLayout
@@ -103,9 +104,9 @@ const Layout = ({ children }: { children: React.ReactChildren }) => {
         </Header>
         <Content
           className="site-layout-background"
+          id={WRAPPER_MAIN_ID}
           style={{
             margin: '24px 16px',
-            padding: 24,
             minHeight: 280,
             height: 'calc(100vh - 64px)',
             overflow: 'auto'
