@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
 import Router from 'next/router'
-import { Button, Layout as AntLayout, Menu } from 'antd'
+import { Layout as AntLayout, Menu } from 'antd'
 import {
   MenuUnfoldOutlined,
   MenuFoldOutlined,
@@ -14,14 +13,28 @@ const { Header, Sider, Content } = AntLayout
 const Layout = ({ children }: { children: React.ReactChildren }) => {
 
   const [ collapsed, setCollapsed ] = useState<boolean>(false)
+  const [ openKeys, setOpenKeys ] = useState<string[]>([])
+  const [ selectKeys, setSelectkeys ] = useState<string[]>(['/home'])
 
   const toggle = useCallback(() => {
     setCollapsed(!collapsed)
   }, [collapsed])
 
-  const onRouterPush = useCallback(({ item, key, keyPath, domEvent }) => {
-    return Router.push(key)
+  const initMenuSelect = useCallback((path?: string) => {
+    const { asPath } = Router
+    const pathList = (path || asPath).split('/').filter(item => !!item).map(item => `/${item}`)
+    if(!pathList.length) {
+      setSelectkeys(['/home'])
+    }else {
+      setOpenKeys(pathList.slice(0, -1))
+      setSelectkeys(pathList.slice(-1))
+    }
   }, [])
+
+  const onRouterPush = useCallback(({ item, key, keyPath, domEvent }) => {
+    initMenuSelect(key)
+    return Router.push(key)
+  }, [initMenuSelect])
 
   const MenuList = useMemo(() => {
     const renderList = (router: TRouter[]) => {
@@ -50,27 +63,16 @@ const Layout = ({ children }: { children: React.ReactChildren }) => {
         )
       })
     }
-    return (
-      <Menu 
-        theme="dark" 
-        mode="inline" 
-        defaultSelectedKeys={['/home']}
-        onClick={onRouterPush}
-      >
-        {
-          renderList(router)
-        }
-      </Menu>
-    )
-  }, [onRouterPush])
+    return renderList(router)
+  }, [])
 
   useEffect(() => {
     const { asPath } = Router
     if(asPath === '/') {
       Router.push('/home')
     }
-    
-  }, [])
+    initMenuSelect()
+  }, [initMenuSelect])
 
   return (
     <AntLayout
@@ -80,9 +82,17 @@ const Layout = ({ children }: { children: React.ReactChildren }) => {
     >
       <Sider trigger={null} collapsible collapsed={collapsed}>
         <div className="logo" />
-        {
-          MenuList
-        }
+        <Menu 
+          theme="dark" 
+          mode="inline" 
+          onClick={onRouterPush}
+          openKeys={openKeys}
+          selectedKeys={selectKeys}
+        >
+          {
+            MenuList
+          }
+        </Menu>
       </Sider>
       <AntLayout className="site-layout">
         <Header className="site-layout-background-header" style={{ padding: 0 }}>
