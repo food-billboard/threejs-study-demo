@@ -22,7 +22,7 @@ export class TREE {
     let geometryBody 
     switch(this.type) {
       case 'centrum': 
-        geometryBody = new THREE.TetrahedronGeometry()
+        geometryBody = new THREE.ConeGeometry(1.1, 1.1, 3)
         break 
       case 'circle': 
         geometryBody = new THREE.SphereGeometry( 0.6, 100, 100 )
@@ -35,9 +35,6 @@ export class TREE {
     const materialBody = new THREE.MeshPhongMaterial( {color: 0x228B22} )
     const centrum = new THREE.Mesh(geometryBody, materialBody)
     if(this.type === 'centrum') {
-      centrum.rotateX(-Math.PI * 1.28)
-      centrum.rotateY(Math.PI * 0.23)
-      centrum.rotateZ(Math.PI * -0.04)
     }else if(this.type === 'circle') {
 
     }else if(this.type === 'square') {

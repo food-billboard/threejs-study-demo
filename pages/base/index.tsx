@@ -4,7 +4,7 @@ import * as Orbitcontrols from 'three-orbit-controls'
 import LoadingWrappr from '@/components/Loading'
 import { DatBoolean, DatColor, DatNumber, DatString } from 'react-dat-gui'
 import { getContainer, sleep } from '@/utils'
-import { TREE } from '@/components/Common'
+import { TREE, Desk, Car } from '@/components/Common'
 import './index.less'
 import { Fragment } from "react"
 
@@ -72,8 +72,9 @@ class Base extends Component<any> {
         renderer.render(scene, camera)
       }
       const scene = new THREE.Scene()
+      scene.background = new THREE.Color(0x111111)
       const camera = new THREE.PerspectiveCamera(75, containerWidth! / containerHeight!, 0.1, 1000)
-      camera.position.set(0, 0, 5)
+      camera.position.set(0, 2, 5)
       camera.lookAt(scene.position)
       let orbitControls = new OrbitcontrolsConstructor(camera, container)
 
@@ -98,12 +99,28 @@ class Base extends Component<any> {
       cube.position.set(1, 1, 0)
       scene.add( cube )
 
-      const tree = new TREE('circle')
-      scene.add(tree.create())
+      //树
+      const tree = (new TREE('centrum')).create()
+      tree.position.set(0, 0.5, 0)
+      scene.add(tree)
+
+      //桌子
+      const desk = (new Desk("rgb(205,133,63)")).create()
+      desk.position.set(-2, 0.5, 0)
+      scene.add(desk)
+
+      //车
+      const car = (new Car("rgb(205,133,63)")).create()
+      car.position.set(2, 0.5, 0)
+      scene.add(car)
 
       //坐标系
       const axesHelper = new THREE.AxesHelper( 100 )
       scene.add(axesHelper)
+
+      //网格
+      const gridHelper = new THREE.GridHelper( 10, 10 );
+      scene.add( gridHelper )
 
       orbitControls.autoRotate = false
       const renderer = new THREE.WebGLRenderer()
