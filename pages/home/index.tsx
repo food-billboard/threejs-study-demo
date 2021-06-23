@@ -29,12 +29,12 @@ class IndexPage extends Component<IProps, IState> {
    */
   static getInitialProps = async () => {
     //异步加载模块
-    const moment = await import('moment')
-    const result = Promise.resolve({ 
+    const moment = await import('dayjs')
+    const result = { 
       test: 'hello world',
       moment
-    })
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    }
+    // await new Promise(resolve => setTimeout(resolve, 1000))
     return result
   }
 
