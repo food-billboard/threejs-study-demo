@@ -4,7 +4,7 @@ import * as Orbitcontrols from 'three-orbit-controls'
 import LoadingWrappr from '@/components/Loading'
 import { DatBoolean, DatColor, DatNumber, DatString } from 'react-dat-gui'
 import { getContainer, sleep } from '@/utils'
-import { TREE, Desk, Car } from '@/components/Common'
+import { TREE, Desk, Car, BaseHoouse } from '@/components/Common'
 import './index.less'
 import { Fragment } from "react"
 
@@ -60,6 +60,7 @@ class Base extends Component<any> {
   }
 
   tree: any 
+  direction = true 
 
   initThree = async () => {
     const { container, width: containerWidth, height: containerHeight } = getContainer('#three-base')
@@ -68,13 +69,23 @@ class Base extends Component<any> {
         requestAnimationFrame(animate)
         cube.rotation.x += 0.01
         cube.rotation.y += 0.01
+        if(car.position.x < 30 && this.direction) {
+          car.position.x += 0.02
+        }else if(car.position.x >= 30) {
+          this.direction = false 
+        }
+        if(car.position.x > -30 && !this.direction) {
+          car.position.x -= 0.02
+        }else if(car.position.x <= -30) {
+          this.direction = true 
+        }
         this.props.stats.update()
         renderer.render(scene, camera)
       }
       const scene = new THREE.Scene()
       scene.background = new THREE.Color(0x111111)
       const camera = new THREE.PerspectiveCamera(75, containerWidth! / containerHeight!, 0.1, 1000)
-      camera.position.set(0, 2, 5)
+      camera.position.set(-10, 2, 10)
       camera.lookAt(scene.position)
       let orbitControls = new OrbitcontrolsConstructor(camera, container)
 
@@ -97,29 +108,38 @@ class Base extends Component<any> {
       const material = new THREE.MeshPhongMaterial( { color: 0xff4499 } )
       const cube = new THREE.Mesh( geometry, material )
       cube.position.set(1, 1, 0)
+      THREE.PlaneGeometry
       scene.add( cube )
 
       //树
-      const tree = (new TREE('centrum')).create()
-      tree.position.set(0, 0.5, 0)
+      const tree = (new TREE('square')).create()
+      tree.position.set(4, 1, -2)
+      tree.scale.set(2, 2, 2)
       scene.add(tree)
 
       //桌子
       const desk = (new Desk("rgb(205,133,63)")).create()
-      desk.position.set(-2, 0.5, 0)
+      desk.position.set(10, .25, 3)
+      desk.scale.set(0.6, .6, .6)
       scene.add(desk)
 
       //车
       const car = (new Car("rgb(205,133,63)")).create()
-      car.position.set(2, 0.5, 0)
+      car.position.set(0, .5, 2)
       scene.add(car)
+
+      //房子
+      const baseHouse = (new BaseHoouse()).create()
+      baseHouse.position.set(-2, -.8, -2)
+      baseHouse.scale.set(.3, .3, .3)
+      scene.add(baseHouse)
 
       //坐标系
       const axesHelper = new THREE.AxesHelper( 100 )
       scene.add(axesHelper)
 
       //网格
-      const gridHelper = new THREE.GridHelper( 10, 10 );
+      const gridHelper = new THREE.GridHelper( 100, 100 );
       scene.add( gridHelper )
 
       orbitControls.autoRotate = false
