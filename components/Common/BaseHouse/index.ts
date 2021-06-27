@@ -1,18 +1,65 @@
 import * as THREE from 'three'
-import { Object3D } from 'three'
+import { getMouseAxes } from '../utils'
 
-export class BaseHoouse {
+export class BaseHouse {
 
   constructor() {
+    this.raycaster = new THREE.Raycaster()
+    this.mouse = new THREE.Vector2(1, 1)
+  }
 
+  private raycaster: THREE.Raycaster
+  private mouse: THREE.Vector2
+
+  private doorMesh!: THREE.Group
+  private windowMesh!: THREE.Group
+
+  private doorClose = true 
+
+  public handleClick = (event: any) => {
+    const { x, y } = getMouseAxes(event)
+    this.mouse.x = x 
+    this.mouse.y = y
+    // vector = vector.unproject(this.camera)
+    // const raycaster = new Raycaster(    // 通过摄像机和鼠标位置更新射线
+    //   this.camera.position,
+    //   vector.sub(this.camera.position).normalize()
+    // )
+    
+    // // 计算物体和射线的交点
+    // const intersects = raycaster.intersectObjects([this.doorSet.door])
+    // if(intersects.length > 0){
+    //   this.doorSet.animate()
+    // }
+  }
+
+  public eventBinding = (container: Element) => {
+    container.addEventListener('click', this.handleClick, false)
+  }
+
+  public eventUnBinding = () => {
+
+  }
+
+  public doorState = {
+    close: true 
   }
 
   //正面墙
   private frontWall = ([x, y, z]: number[]) => {
     const group = new THREE.Group()
+
+    //窗户
     const window = this.createWindow()
-    window.position.set(3, 9, 5)
+    window.position.set(3, 9, -.2)
     group.add(window)
+
+    //门
+    const doorThing = this.createDoor()
+    doorThing.position.set(-2, 4.5, 0)
+    this.doorMesh = doorThing
+    group.add(doorThing)
+
     //绘制整体形状
     const shape = new THREE.Shape()   
     shape.moveTo(0, 0)
@@ -33,8 +80,8 @@ export class BaseHoouse {
     //用Path类绘制门的形状
     const door = new THREE.Path()   
     door.moveTo(-4, .5)
-    door.lineTo(-4, 8)
-    door.lineTo(0, 8)
+    door.lineTo(-4, 8.5)
+    door.lineTo(0, 8.5)
     door.lineTo(0, .5)
     //将门的形状加入到shape.holes数组
     shape.holes.push(door)    
@@ -52,6 +99,7 @@ export class BaseHoouse {
     const mesh = new THREE.Mesh( geometry, material )
     group.add(mesh)
     group.position.set(x, y, z)
+    group.scale.setZ(.3)
     return group
   }
 
@@ -74,9 +122,10 @@ export class BaseHoouse {
     }
   
     const geometry = new THREE.ExtrudeGeometry( shape, extrudeSettings )
-    const material = new THREE.MeshBasicMaterial( { color: 0xff00ff } );
+    const material = new THREE.MeshBasicMaterial( { color: 0xF5DEB3 } );
     const mesh = new THREE.Mesh( geometry, material )
     mesh.position.set(x, y, z)
+    mesh.scale.setZ(.3)
     return mesh
   }
 
@@ -90,7 +139,7 @@ export class BaseHoouse {
       map: floorTexture,
       side: THREE.DoubleSide
     })
-    const geometry = new THREE.PlaneGeometry( 14, 14 );
+    const geometry = new THREE.PlaneGeometry( 12, 16 );
     // const material = new THREE.MeshBasicMaterial( {color: 0xFFFAF0, side: THREE.DoubleSide} );
     const plane = new THREE.Mesh( geometry, floorMaterial )
     plane.position.set(x, y, z)
@@ -122,6 +171,7 @@ export class BaseHoouse {
     const material = new THREE.MeshBasicMaterial( { color: 0xF5DEB3 } );
     const mesh = new THREE.Mesh( geometry, material )
     mesh.position.set(x, y, z)
+    mesh.scale.setZ(.5)
     return mesh
   }
 
@@ -160,6 +210,61 @@ export class BaseHoouse {
   }
 
   //门
+  private createDoor = () => {
+    const door = new THREE.Group()
+
+    //门框
+    const frame = new THREE.Shape()
+    const frameTexture = new THREE.TextureLoader().load('/images/basehouse/roof.jpeg')
+    frameTexture.wrapS = frameTexture.wrapT = THREE.RepeatWrapping
+    frameTexture.repeat.set( 2, 2 )
+
+    frame.moveTo(2, -4)
+    frame.lineTo(-2, -4)
+    frame.lineTo(-2, 4)
+    frame.lineTo(2, 4)
+
+    const hole = new THREE.Path()
+    hole.moveTo(1.8, -3.8)
+    hole.lineTo(-1.8, -3.8)
+    hole.lineTo(-1.8, 3.8)
+    hole.lineTo(1.8, 3.8)
+
+    frame.holes.push(hole)
+
+    const frameGeometry = new THREE.ExtrudeGeometry(frame, {
+      steps: 1,
+      depth: 0,
+      bevelEnabled: true,
+      bevelThickness: 1,
+      bevelSize: 0,
+      bevelOffset: 0,
+      bevelSegments: 1
+    })
+    const frameMaterial = new THREE.MeshBasicMaterial( { map: frameTexture, side: THREE.DoubleSide } )
+    const mesh = new THREE.Mesh( frameGeometry, frameMaterial )
+
+    door.add(mesh)
+
+    //门
+    const doorGroup = new THREE.Group()
+    //门把手
+    const doorHolderGeometry = new THREE.CylinderGeometry(.3, .3, 3, 32)
+    const doorHolderMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D })
+    const doorHolder = new THREE.Mesh(doorHolderGeometry, doorHolderMaterial)
+    doorHolder.rotateX(Math.PI * .5)
+    doorHolder.position.x = 1
+    //门板
+    const doorBoardGeometry = new THREE.BoxGeometry(3.6, 7.6, .5)
+    const doorBoard =  new THREE.Mesh(doorBoardGeometry, frameMaterial)
+    doorGroup.add(doorHolder)
+    doorGroup.add(doorBoard)
+
+    door.add(doorGroup)
+
+    return door 
+
+  }
 
   //窗户
   private createWindow = () => {
@@ -185,18 +290,19 @@ export class BaseHoouse {
 
     shape.holes.push(path)
     
-    // const frame = new THREE.ShapeGeometry(shape)
     const frame = new THREE.ExtrudeGeometry(shape, {
-      //@ts-ignore
-      amount: .1,  
-      bevelSegments: 1, 
-      steps: 1, 
-      bevelSize: 0, 
-      bevelThickness: 1 
+      steps: 1,
+      depth: 0,
+      bevelEnabled: true,
+      bevelThickness: 1,
+      bevelSize: 0,
+      bevelOffset: 0,
+      bevelSegments: 1
     })
     const frameMaterial = new THREE.MeshBasicMaterial( { map: frameTexture, side: THREE.DoubleSide } )
     const mesh = new THREE.Mesh( frame, frameMaterial )
     mesh.position.set(.5, -1, 0)
+    mesh.scale.setZ(1.2)
     frameWrapper.add(mesh)
 
     const geometry = new THREE.BoxGeometry( .8, 1.8, .01 );
@@ -226,9 +332,44 @@ export class BaseHoouse {
     return windows
   }
 
-  //
+  //开关门
+  public changeDoorState = (close?: boolean) => {
+    // if(typeof close === 'boolean' && !!close || !this.doorClose) {  
+    //   this.param.positionX = 10
+    //   this.param.positionZ = 50
+    //   this.param.rotationY = -Math.PI/2
+    //   this.status= 'open'
+    // }else{
+    //   this.param.positionX = 60
+    //   this.param.positionZ = 0
+    //   this.param.rotationY = 0
+    //   this.status= 'closed'
+    // }
+    // this.onUpdate(this.param)
+    console.log(111111)
+  }
 
-  create = () => {
+  //开关窗
+  public changeWindowState = (close?: boolean) => {
+
+  }
+
+  public update = (camera: THREE.Camera) => {
+    this.raycaster.setFromCamera( this.mouse, camera )
+
+    const intersection = this.raycaster.intersectObject( this.doorMesh )
+
+    if ( intersection.length > 0 ) {
+      this.changeDoorState()
+      // const instanceId = intersection[ 0 ].instanceId;
+
+      // mesh.setColorAt( instanceId, color.setHex( Math.random() * 0xffffff ) );
+      // mesh.instanceColor.needsUpdate = true;
+
+    }
+  }
+
+  public create = () => {
 
     const house = new THREE.Object3D()
 
@@ -259,12 +400,12 @@ export class BaseHoouse {
     //侧面墙
     const sideWalls = [
       [
-        -12,
+        -12.5,
         3,
         0
       ],
       [
-        2,
+        2.5,
         3,
         0
       ]
