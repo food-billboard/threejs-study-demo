@@ -1,48 +1,43 @@
 import * as THREE from 'three'
-import { getMouseAxes } from '../utils'
+import TWEEN from '@tweenjs/tween.js'
+import Base, { TAnimationQueue } from '../Base'
 
-export class BaseHouse {
-
-  constructor() {
-    this.raycaster = new THREE.Raycaster()
-    this.mouse = new THREE.Vector2(1, 1)
-  }
-
-  private raycaster: THREE.Raycaster
-  private mouse: THREE.Vector2
+export class BaseHouse extends Base {
 
   private doorMesh!: THREE.Group
-  private windowMesh!: THREE.Group
-
-  private doorClose = true 
-
-  public handleClick = (event: any) => {
-    const { x, y } = getMouseAxes(event)
-    this.mouse.x = x 
-    this.mouse.y = y
-    // vector = vector.unproject(this.camera)
-    // const raycaster = new Raycaster(    // 通过摄像机和鼠标位置更新射线
-    //   this.camera.position,
-    //   vector.sub(this.camera.position).normalize()
-    // )
-    
-    // // 计算物体和射线的交点
-    // const intersects = raycaster.intersectObjects([this.doorSet.door])
-    // if(intersects.length > 0){
-    //   this.doorSet.animate()
-    // }
+  private doorState = {
+    close: true,
+    loading: false  
   }
 
-  public eventBinding = (container: Element) => {
-    container.addEventListener('click', this.handleClick, false)
+  private windowLeftMesh!: THREE.Object3D
+  private windowRightMesh!: THREE.Object3D
+  private windowLeftState = {
+    close: true,
+    loading: false  
+  }
+  private windowRightState = {
+    close: true,
+    loading: false 
   }
 
-  public eventUnBinding = () => {
-
-  }
-
-  public doorState = {
-    close: true 
+  public eventBinding = (objects: THREE.Intersection[]) => {
+    return this.baseEventBinding(objects, [this.doorMesh, this.windowLeftMesh, this.windowRightMesh], [(object) => {
+      this.animationStateChange(this.doorMesh, {
+        callback: this.changeDoorState,
+        update: true 
+      })
+    }, () => {
+      this.animationStateChange(this.windowLeftMesh, {
+        callback: this.changeWindowLeftState,
+        update: true 
+      })
+    }, () => {
+      this.animationStateChange(this.windowRightMesh, {
+        callback: this.changeWindowRightState,
+        update: true 
+      })
+    }])
   }
 
   //正面墙
@@ -51,13 +46,13 @@ export class BaseHouse {
 
     //窗户
     const window = this.createWindow()
-    window.position.set(3, 9, -.2)
+    window.position.set(3, 9, 1)
     group.add(window)
 
     //门
     const doorThing = this.createDoor()
     doorThing.position.set(-2, 4.5, 0)
-    this.doorMesh = doorThing
+    doorThing.name = '门'
     group.add(doorThing)
 
     //绘制整体形状
@@ -99,7 +94,6 @@ export class BaseHouse {
     const mesh = new THREE.Mesh( geometry, material )
     group.add(mesh)
     group.position.set(x, y, z)
-    group.scale.setZ(.3)
     return group
   }
 
@@ -249,18 +243,24 @@ export class BaseHouse {
     //门
     const doorGroup = new THREE.Group()
     //门把手
-    const doorHolderGeometry = new THREE.CylinderGeometry(.3, .3, 3, 32)
+    const doorHolderGeometry = new THREE.CylinderGeometry(.3, .3, 1, 32)
     const doorHolderMaterial = new THREE.MeshBasicMaterial({ color: 0xA0522D })
     const doorHolder = new THREE.Mesh(doorHolderGeometry, doorHolderMaterial)
     doorHolder.rotateX(Math.PI * .5)
-    doorHolder.position.x = 1
+    doorHolder.position.x = -1
     //门板
     const doorBoardGeometry = new THREE.BoxGeometry(3.6, 7.6, .5)
-    const doorBoard =  new THREE.Mesh(doorBoardGeometry, frameMaterial)
+    const doorBoard = new THREE.Mesh(doorBoardGeometry, frameMaterial)
     doorGroup.add(doorHolder)
     doorGroup.add(doorBoard)
+    const doorGroupWrapper = new THREE.Group()
+    doorGroup.position.x = -1.8
+    doorGroupWrapper.castShadow = true 
+    doorGroupWrapper.add(doorGroup)
+    doorGroupWrapper.position.x = 1.8
+    this.doorMesh = doorGroupWrapper
 
-    door.add(doorGroup)
+    door.add(doorGroupWrapper)
 
     return door 
 
@@ -323,50 +323,145 @@ export class BaseHouse {
     const cube = new THREE.Mesh( geometry, windowMaterial )
     cube.position.set(0, 0, 0)
     frameWrapper.add(cube)
+    frameWrapper.scale.z = .1
 
     const beside = frameWrapper.clone()
-    frameWrapper.position.set(-.5, 0, 0)
-    beside.position.set(.5, 0, 0)
-    windows.add(frameWrapper)
-    windows.add(beside)
+
+    //动画
+    const frameGroup = new THREE.Group()
+    frameGroup.add(frameWrapper)
+    frameWrapper.position.set(.5, 0, 0)
+    frameGroup.position.set(-1, 0, 0)
+    const besideGroup = new THREE.Group()
+    besideGroup.add(beside)
+    beside.position.set(-.5, 0, 0)
+    besideGroup.position.set(1, 0, 0)
+
+    this.windowLeftMesh = frameGroup
+    this.windowRightMesh = besideGroup
+    windows.add(frameGroup)
+    windows.add(besideGroup)
+
+    //底座
+    const lampstandGeometry = new THREE.BoxGeometry(2.4, 0.2, 1.5)
+    const lampstandMaterial = new THREE.MeshBasicMaterial({ color: 0x777777 })
+    const lampstand = new THREE.Mesh(lampstandGeometry, lampstandMaterial)
+    lampstand.position.set(0, -1, .75)
+    windows.add(lampstand)
+
     return windows
   }
 
   //开关门
-  public changeDoorState = (close?: boolean) => {
-    // if(typeof close === 'boolean' && !!close || !this.doorClose) {  
-    //   this.param.positionX = 10
-    //   this.param.positionZ = 50
-    //   this.param.rotationY = -Math.PI/2
-    //   this.status= 'open'
-    // }else{
-    //   this.param.positionX = 60
-    //   this.param.positionZ = 0
-    //   this.param.rotationY = 0
-    //   this.status= 'closed'
-    // }
-    // this.onUpdate(this.param)
-    console.log(111111)
-  }
-
-  //开关窗
-  public changeWindowState = (close?: boolean) => {
-
-  }
-
-  public update = (camera: THREE.Camera) => {
-    this.raycaster.setFromCamera( this.mouse, camera )
-
-    const intersection = this.raycaster.intersectObject( this.doorMesh )
-
-    if ( intersection.length > 0 ) {
-      this.changeDoorState()
-      // const instanceId = intersection[ 0 ].instanceId;
-
-      // mesh.setColorAt( instanceId, color.setHex( Math.random() * 0xffffff ) );
-      // mesh.instanceColor.needsUpdate = true;
-
+  public changeDoorState: TAnimationQueue["callback"] = (object, close) => {
+    if(this.doorState.loading) return 
+    this.doorState.loading = true 
+    if(!this.doorState.close) {
+      const tween = new TWEEN.Tween({
+        y: -Math.PI * .5
+      })
+      .to({ y: 0 }, 1000) 
+      .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+      .onUpdate(({ y }) => {
+        object.rotation.y = y
+      })
+      .onComplete(() => {
+        close()
+        this.doorState.loading = false
+        this.doorState.close = true 
+      })
+      .start()
+    }else {
+      const tween = new TWEEN.Tween({
+        y: 0
+      })
+      .to({ y: -Math.PI * .5 }, 1000) 
+      .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+      .onUpdate(({ y }) => {
+        object.rotation.y = y
+      })
+      .onComplete(() => {
+        close()
+        this.doorState.loading = false
+        this.doorState.close = false 
+      })
+      .start()
     }
+
+  }
+
+  //左侧开关窗
+  public changeWindowLeftState: TAnimationQueue["callback"] = (object, close) => {
+    if(this.windowLeftState.loading) return 
+      this.windowLeftState.loading = true 
+      if(!this.windowLeftState.close) {
+        const tween = new TWEEN.Tween({
+          y: Math.PI * .5
+        })
+        .to({ y: 0 }, 1000) 
+        .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+        .onUpdate(({ y }) => {
+          object.rotation.y = y
+        })
+        .onComplete(() => {
+          close()
+          this.windowLeftState.loading = false
+          this.windowLeftState.close = true 
+        })
+        .start()
+      }else {
+        const tween = new TWEEN.Tween({
+          y: 0
+        })
+        .to({ y: Math.PI * .5 }, 1000) 
+        .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+        .onUpdate(({ y }) => {
+          object.rotation.y = y
+        })
+        .onComplete(() => {
+          close()
+          this.windowLeftState.loading = false
+          this.windowLeftState.close = false 
+        })
+        .start()
+      }
+  }
+
+  //右侧开关窗
+  public changeWindowRightState: TAnimationQueue["callback"] = (object, close) => {
+    if(this.doorState.loading) return 
+      this.doorState.loading = true 
+      if(!this.doorState.close) {
+        const tween = new TWEEN.Tween({
+          y: -Math.PI * .5
+        })
+        .to({ y: 0 }, 1000) 
+        .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+        .onUpdate(({ y }) => {
+          object.rotation.y = y
+        })
+        .onComplete(() => {
+          close()
+          this.doorState.loading = false
+          this.doorState.close = true 
+        })
+        .start()
+      }else {
+        const tween = new TWEEN.Tween({
+          y: 0
+        })
+        .to({ y: -Math.PI * .5 }, 1000) 
+        .easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+        .onUpdate(({ y }) => {
+          object.rotation.y = y
+        })
+        .onComplete(() => {
+          close()
+          this.doorState.loading = false
+          this.doorState.close = false 
+        })
+        .start()
+      }
   }
 
   public create = () => {
