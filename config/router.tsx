@@ -30,6 +30,16 @@ const router: TRouter[] = [
     path: '/base',
     icon: <AppstoreOutlined />,
     title: '基础3d',
+    routes: [
+      {
+        path: '/base/index',
+        title: '基础场景'
+      },
+      {
+        path: '/base/laptop',
+        title: '笔记本电脑'
+      }
+    ]
   }
 ]
 

@@ -1,14 +1,14 @@
-import React, { Component } from "react"
+import React, { Component, Fragment } from "react"
 import * as THREE from 'three'
 import * as Orbitcontrols from 'three-orbit-controls'
 import { DatNumber } from 'react-dat-gui'
 import TWEEN from '@tweenjs/tween.js'
 import { getContainer } from '@/utils'
 import LoadingWrappr from '@/components/Loading'
-import { TREE, Desk, Car, BaseHouse, Football, Laptop } from '@/components/Common'
+import { TREE, Desk, Car, BaseHouse, Football, Laptop, PhotoFrame } from '@/components/Common'
 import { mouseEventRaycaster } from '@/components/Common/utils'
+import { getMouseAxes } from '@/components/Common/utils'
 import './index.less'
-import { Fragment } from "react"
 
 const OrbitcontrolsConstructor = Orbitcontrols(THREE)
 
@@ -185,6 +185,11 @@ class Base extends Component<any> {
       const laptopObj = laptop.create()
       laptopObj.position.set(-4, 0, 5)
       scene.add(laptopObj)
+      //相框
+      const photoFrame = new PhotoFrame()
+      const photoFrameObj = photoFrame.create()
+      photoFrameObj.position.set(3, 3, 3)
+      scene.add(photoFrameObj)
 
       //坐标系
       const axesHelper = new THREE.AxesHelper( 100 )
