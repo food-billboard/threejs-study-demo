@@ -38,6 +38,16 @@ const router: TRouter[] = [
       {
         path: '/base/laptop',
         title: '笔记本电脑'
+      },
+      {
+        path:'/base/test',
+        title: '测试sub',
+        routes: [
+          {
+            path: '/base/test/test-2',
+            title: '测试children'
+          }
+        ]
       }
     ]
   }

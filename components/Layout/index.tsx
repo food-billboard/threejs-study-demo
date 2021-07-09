@@ -21,23 +21,7 @@ const Layout = ({ children }: { children: React.ReactChildren }) => {
     setCollapsed(!collapsed)
   }, [collapsed])
 
-  const initMenuSelect = useCallback((path?: string) => {
-    const { asPath } = Router
-    const pathList = (path || asPath).split('/').filter(item => !!item).map(item => `/${item}`)
-    if(!pathList.length) {
-      setSelectKeys(['/home'])
-    }else {
-      setOpenKeys(pathList.slice(0, -1))
-      setSelectKeys(pathList.slice(-1))
-    }
-  }, [])
-
-  const onRouterPush = useCallback(({ item, key, keyPath, domEvent }) => {
-    initMenuSelect(key)
-    return Router.push(key)
-  }, [initMenuSelect])
-
-  const onSubMenuPush = useCallback(({ key }) => {
+  const findOpenKeys = useCallback((key) => {
     let keys: string[] = []
     const find: (routes: Required<TRouter["routes"]>) => boolean  = (routes) => {
       if(!routes) return false 
@@ -64,8 +48,35 @@ const Layout = ({ children }: { children: React.ReactChildren }) => {
       }
       return false 
     }, [])
-    setOpenKeys(keys)
+    return keys 
   }, [])
+
+  const initMenuSelect = useCallback((path?: string) => {
+    const { asPath } = Router
+    const pathList = (path || asPath).split('/').filter(item => !!item).map(item => `/${item}`)
+    if(!pathList.length) {
+      setSelectKeys(['/home'])
+    }else {
+      const openKeys = findOpenKeys(path || asPath)
+      const realPath = path || asPath
+      setOpenKeys(openKeys)
+      setSelectKeys([realPath])
+    }
+  }, [findOpenKeys])
+
+  const onRouterPush = useCallback(({ item, key, keyPath, domEvent }) => {
+    initMenuSelect(key)
+    return Router.push(key)
+  }, [initMenuSelect])
+
+  const onSubMenuPush = useCallback(({ key }) => {
+    if(openKeys.includes(key)) {
+      setOpenKeys(openKeys.filter(item => item !== key))
+      return 
+    }
+    const keys = findOpenKeys(key)
+    setOpenKeys(keys)
+  }, [openKeys, findOpenKeys])
 
   const MenuList = useMemo(() => {
     const renderList = (router: TRouter[]) => {
@@ -96,7 +107,7 @@ const Layout = ({ children }: { children: React.ReactChildren }) => {
       })
     }
     return renderList(router)
-  }, [onRouterPush])
+  }, [onSubMenuPush])
 
   useEffect(() => {
     const { asPath } = Router
