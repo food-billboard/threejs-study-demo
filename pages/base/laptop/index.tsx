@@ -37,7 +37,7 @@ const LapTop  = memo(forwardRef((props: any, ref: any) => {
       const animate = () => {
         requestAnimationFrame(animate)
         TWEEN.update()
-        stats.update()
+        // stats && stats.update()
         renderer.render(scene, camera)
       }
       const scene = new THREE.Scene()
@@ -88,7 +88,7 @@ const LapTop  = memo(forwardRef((props: any, ref: any) => {
       const renderer = new THREE.WebGLRenderer()
       renderer.setSize(containerWidth!, containerHeight!)
       container.appendChild( renderer.domElement )
-      container.appendChild(stats.dom)
+      stats && container.appendChild(stats.dom)
 
       eventBinding(container)
 
