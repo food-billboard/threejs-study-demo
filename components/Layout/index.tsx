@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons'
 import router, { TRouter } from '@/config/router'
 import { WRAPPER_MAIN_ID } from '@/constants'
-import './index.less'
+import style from './index.module.css'
 
 const { Header, Sider, Content } = AntLayout
 

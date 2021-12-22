@@ -25,16 +25,67 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
           host: ${{ secrets.SSH_HOST }}
           script: |
-            rm -rf ${{ secrets.REMOTE_PATH_PREV }}
-            mkdir -p ${{ secrets.REMOTE_PATH_PREV }}
-            mv ${{ secrets.REMOTE_PATH }} ${{ secrets.REMOTE_PATH_PREV }}
+            rm -rf ${{secrets.REMOTE_PATH_PREV}}
+            mkdir -p ${{secrets.REMOTE_PATH}}
+            mv ${{secrets.REMOTE_PATH}} ${{secrets.REMOTE_PATH_PREV}}
+            npm i pm2 -g
+            npm i yarn -g
 
-      - name: Deploy 🚀
+      # ------- scp the file ----------
+      # public 
+      - name: Deploy public 🍱
         uses: garygrossgarten/github-action-scp@release
         with:
-          local: "./dist/"
-          remote: ${{ secrets.REMOTE_PATH }}
+          local: "./public/"
+          remote: ${{secrets.REMOTE_PATH}}/public
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
+      # dist 
+      - name: Deploy dist 🍱
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: "./dist/"
+          remote: ${{ secrets.REMOTE_PATH }}/dist
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      # package.json 
+      - name: Deploy package.json 🍱
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: "./package.json"
+          remote: ${{ secrets.REMOTE_PATH }}/package.json
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      # next.config.js
+      - name: Deploy next.config.js 🍱
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: "./next.config.js"
+          remote: ${{ secrets.REMOTE_PATH }}/next.config.js
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      # pm2.config.js
+      - name: Deploy pm2.config.js 🍱
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: "./pm2.config.js"
+          remote: ${{ secrets.REMOTE_PATH }}/pm2.config.js
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+
+      - name: start server 🚀 
+        uses: appleboy/ssh-action@master
+        with:
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          host: ${{ secrets.SSH_HOST }}
+          script: |
+            cd ${{ secrets.REMOTE_PATH }}
+            yarn
+            yarn start
            

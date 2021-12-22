@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "server:dev": "node server.js",
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p 4003",
     "build": "next build",
-    "start": "next start -p 3001",
-    "lint": "next lint"
+    "start": "next start -p 4003",
+    "lint": "next lint",
+    "start:production": "pm2 startOrRestart pm2.config.js"
   },
   "dependencies": {
     "@tweenjs/tween.js": "^18.6.4",

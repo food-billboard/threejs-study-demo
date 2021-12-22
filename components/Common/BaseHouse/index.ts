@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import TWEEN from '@tweenjs/tween.js'
 import Base, { TAnimationQueue } from '../Base'
+import { loadImage } from '@/utils'
 
 export class BaseHouse extends Base {
 
@@ -125,7 +126,7 @@ export class BaseHouse extends Base {
 
   //地板
   private createFloor = ([x, y, z]: number[]) => {
-    const floorTexture = new THREE.TextureLoader().load('/images/basehouse/floor.jpeg')
+    const floorTexture = new THREE.TextureLoader().load(loadImage('/images/basehouse/floor.jpeg'))
     floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping
     floorTexture.repeat.set(25, 25)
     floorTexture.anisotropy = 16
@@ -172,7 +173,7 @@ export class BaseHouse extends Base {
   //房顶
   private createRoof = ([x, y, z]: number[]) => {
     //导入贴图
-    const roofTexture = new THREE.TextureLoader().load('/images/basehouse/roof.jpeg')
+    const roofTexture = new THREE.TextureLoader().load(loadImage('/images/basehouse/roof.jpeg'))
     roofTexture.wrapS = roofTexture.wrapT = THREE.RepeatWrapping
     roofTexture.repeat.set( 2, 2 )
     const materials = []    //创建一个6项的材质数组，three.js会自动将每一项贴一个面
@@ -209,7 +210,7 @@ export class BaseHouse extends Base {
 
     //门框
     const frame = new THREE.Shape()
-    const frameTexture = new THREE.TextureLoader().load('/images/basehouse/roof.jpeg')
+    const frameTexture = new THREE.TextureLoader().load(loadImage('/images/basehouse/roof.jpeg'))
     frameTexture.wrapS = frameTexture.wrapT = THREE.RepeatWrapping
     frameTexture.repeat.set( 2, 2 )
 
@@ -273,7 +274,7 @@ export class BaseHouse extends Base {
 
     const frameWrapper = new THREE.Object3D()
     const shape = new THREE.Shape()
-    const frameTexture = new THREE.TextureLoader().load('/images/basehouse/roof.jpeg')
+    const frameTexture = new THREE.TextureLoader().load(loadImage('/images/basehouse/roof.jpeg'))
     frameTexture.wrapS = frameTexture.wrapT = THREE.RepeatWrapping
     frameTexture.repeat.set( 2, 2 )
 

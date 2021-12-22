@@ -3,12 +3,12 @@ import * as THREE from 'three'
 import * as Orbitcontrols from 'three-orbit-controls'
 import { DatNumber } from 'react-dat-gui'
 import TWEEN from '@tweenjs/tween.js'
-import { getContainer } from '@/utils'
+import { getContainer, loadImage } from '@/utils'
 import LoadingWrappr from '@/components/Loading'
 import { TREE, Desk, Car, BaseHouse, Football, Laptop, PhotoFrame } from '@/components/Common'
 import { mouseEventRaycaster } from '@/components/Common/utils'
 import { getMouseAxes } from '@/components/Common/utils'
-import './index.less'
+import style from './index.module.css'
 
 const OrbitcontrolsConstructor = Orbitcontrols(THREE)
 
@@ -132,7 +132,7 @@ class Base extends Component<any> {
 
       //草地
       const grassGeometry = new THREE.PlaneGeometry(100, 100)
-      const grassTexture = new THREE.TextureLoader().load('/images/base/grass.jpeg')
+      const grassTexture = new THREE.TextureLoader().load(loadImage('/images/base/grass.jpeg'))
       grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping
       grassTexture.repeat.set(2, 2)
       const grassMaterial = new THREE.MeshBasicMaterial({
@@ -225,7 +225,7 @@ class Base extends Component<any> {
   render = () => {
     return (
       <Fragment>
-        <div id="three-base"></div>
+        <div id={"three-base"} className={style["three-base"]}></div>
       </Fragment>
     )
   }

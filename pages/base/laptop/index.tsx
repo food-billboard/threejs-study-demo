@@ -8,7 +8,7 @@ import LoadingWrapper from '@/components/Loading'
 import { Laptop } from '@/components/Common'
 import { mouseEventRaycaster } from '@/components/Common/utils'
 import { getMouseAxes } from '@/components/Common/utils'
-import './index.less'
+import style from './index.module.css'
 
 const OrbitcontrolsConstructor = Orbitcontrols(THREE)
 
@@ -121,7 +121,7 @@ const LapTop  = memo(forwardRef((props: any, ref: any) => {
   }, [])
 
   return (
-    <div id="three-base-laptop"></div>
+    <div id="three-base-laptop" className={style["three-base-laptop"]}></div>
   )
 
 }))

@@ -1,6 +1,8 @@
 const withAntdLess = require('next-plugin-antd-less');
 
 module.exports = {
+  basePath: process.env.NODE_ENV === "development" ? "" : "/api/backend/threejs-study",
+  assetPrefix: process.env.NODE_ENV === "development" ? "" : "/api/backend/threejs-study",
   // 输出目录
   distDir: 'dist',
   // 是否每个路由生成Etag

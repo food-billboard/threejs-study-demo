@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import Base, { TOptions } from '../Base'
-import { IMAGE_FALLBACK } from '@/utils'
+import { IMAGE_FALLBACK, loadImage } from '@/utils'
 
 export class PhotoFrame extends Base {
 
@@ -58,7 +58,7 @@ export class PhotoFrame extends Base {
 
     shape.holes.push(path)
 
-    const bgTexture = new THREE.TextureLoader().load('/images/basehouse/floor.jpeg')
+    const bgTexture = new THREE.TextureLoader().load(loadImage('/images/basehouse/floor.jpeg'))
     bgTexture.wrapS = bgTexture.wrapT = THREE.RepeatWrapping
     bgTexture.repeat.set(2, 2)
     const frame = new THREE.ExtrudeGeometry(shape, {
